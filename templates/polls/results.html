@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<script src="path/to/chartjs/dist/Chart.js"></script>
+<!-- <script src="path/to/chartjs/dist/Chart.js"></script> -->
 <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
@@ -26,14 +26,31 @@
 
 <script>
 
+  var state = {
+    'items': [],
+    'values': [],
+  }
+
   var objId = "{{question.id}}"
 
-  var dataURL = '/'
+  var dataURL = `/polls/resultsdata/${objId}/`
   $.ajax({
     method: 'GET',
     url: dataURL,
     success: function (response) {
       console.log('RESPONSE:', response)
+      for (var i in response) {
+
+        var key = Object.keys(response[i])[0]
+        var value = Object.values(response[i])[0]
+
+        state.items.push(key)
+        state.values.push(value)
+      }
+
+      console.log('STATE:', state)
+      buildChart()
+
     }
   })
 
@@ -41,35 +58,25 @@
     var chartData = {
       "type": "bar",
       "scale-x": {
-        "values": [
-          "Amos",
-          "Andrew",
-          "Ivy",
-          "Ninette",
-          "Peter"
-        ]
+        "values": state.items
       },
       "series": [
         {
-          "values": [
-            35,
-            33,
-            27,
-            33,
-            29
-          ]
+          "values": state.values
         }
       ]
     }
+
+    // Render Method[3]
+    zingchart.render({
+      id: 'myChart',
+      data: chartData,
+    });
   }
 
-  // Render Method[3]
-  zingchart.render({
-    id: 'myChart',
-    data: chartData,
-  });
 
 </script>
+
 <!--
 <script>
   var ctx = document.getElementById('myChart').getContext('2d');
@@ -109,9 +116,7 @@
       }
     }
   });
--->
-
 </script>
-
+-->
 
 {% endblock %}
