@@ -2,14 +2,17 @@ from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.http import JsonResponse
 
 from .models import Question, Choice
+
 
 # Get questions and display them
 def index(request):
     latest_question_list = Question.objects.order_by('-publish_date')[:5]
     context = {'latest_question_list': latest_question_list}
     return render(request, 'polls/index.html', context)
+
 
 # Show specific question and choices
 def detail(request, question_id):
@@ -19,10 +22,12 @@ def detail(request, question_id):
         raise Http404("Question does not exist")
     return render(request, 'polls/detail.html', {'question': question })
 
+
 # Get question and display results
 def results(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     return render(request, 'polls/results.html', {'question': question })
+
 
 # Vote for a question choice
 def vote(request, question_id):
@@ -43,3 +48,16 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+# Display results data from a single question and display as JSON
+def resultsData(request, obj):
+    votedata = []
+
+    question = Question.objects.get(id=obj)
+    votes = question.choice_set.all()
+
+    for i in votes:
+        votedata.append({i.choice_text:i.votes})  # format how the http response looks like
+
+    print(votedata)
+    return JsonResponse(votedata, safe=False)
